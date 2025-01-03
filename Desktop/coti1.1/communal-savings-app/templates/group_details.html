@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails du Groupe - CotiSmart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Navigation -->
+    {% include 'nav.html' %}
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-8">
+            <div class="p-6">
+                <h1 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i class="fas fa-users text-indigo-500 mr-3"></i> Détails du Groupe: {{ group.name }}
+                </h1>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-user-friends text-blue-500 mr-3"></i>
+                        <p class="text-gray-600">Membres: <span class="font-semibold">{{ group.members|length }}</span></p>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-wallet text-green-500 mr-3"></i>
+                        <p class="text-gray-600">Solde Total: <span class="font-semibold">{{ balance_values[-1] if balance_values else 0 }} FCFA</span></p>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-arrow-circle-down text-green-500 mr-3"></i>
+                        <p class="text-gray-600">Total Entrant: <span class="font-semibold">{{ total_incoming }} FCFA</span></p>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-arrow-circle-up text-red-500 mr-3"></i>
+                        <p class="text-gray-600">Total Sortant: <span class="font-semibold">{{ total_outgoing }} FCFA</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contributions des membres -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-8 p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-hand-holding-usd text-indigo-500 mr-3"></i> Contributions des Membres
+            </h2>
+            <ul class="list-disc pl-5">
+                {% for member_id, contribution in member_contributions.items() %}
+                    <li class="text-gray-700 flex items-center mb-2">
+                        <i class="fas fa-user text-blue-500 mr-3"></i>
+                        <span>{{ users[member_id].username }}: <span class="font-semibold">{{ "%.2f"|format(contribution) }} FCFA</span></span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Graphique de l'évolution du solde -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Évolution du Solde de la Caisse</h2>
+            <canvas id="balanceChart"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Configuration du graphique
+        const ctx = document.getElementById('balanceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ balance_dates|tojson }},
+                datasets: [{
+                    label: 'Solde de la Caisse',
+                    data: {{ balance_values|tojson }},
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Évolution du Solde de la Caisse'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Solde (FCFA)'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

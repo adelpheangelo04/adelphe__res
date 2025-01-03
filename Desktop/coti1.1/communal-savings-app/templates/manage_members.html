@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des membres - CotiSmart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes custom-bounce {
+            0%, 100% { transform: translateY(0) scale(1); background-color: currentColor; }
+            50% { transform: translateY(-20px) scale(1.1); filter: brightness(1.2); }
+        }
+        .animate-bounce { animation: custom-bounce 1s infinite; }
+        #loader { opacity: 1; transition: opacity 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Loader -->
+    <div id="loader" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-lg shadow-xl flex flex-col items-center">
+            <div class="flex space-x-3 mb-4">
+                <div class="w-4 h-4 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                <div class="w-4 h-4 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                <div class="w-4 h-4 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            </div>
+            <p class="text-gray-600 font-medium">Chargement...</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    {% include 'nav.html' %}
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-3xl font-bold text-gray-900">Gestion des membres</h1>
+                    <span class="text-lg font-medium text-gray-600">{{ group.name }}</span>
+                </div>
+
+                <!-- Formulaire d'ajout de membre -->
+                <div class="mb-8 bg-gray-50 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Ajouter un membre</h2>
+                    <div class="relative">
+                        <label for="search_user" class="block text-sm font-medium text-gray-700 mb-1">
+                            Rechercher un utilisateur
+                        </label>
+                        <div class="relative">
+                            <input type="text" id="search_user" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="Entrez un nom d'utilisateur..."
+                                   autocomplete="off">
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <div id="searchSpinner" class="hidden">
+                                    <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Liste des résultats -->
+                        <div id="searchResults" class="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-lg hidden max-h-60 overflow-y-auto">
+                        </div>
+                    </div>
+                    <form id="addMemberForm" class="space-y-4 mt-4">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                                Email de l'utilisateur
+                            </label>
+                            <input type="email" id="email" name="email" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   required>
+                        </div>
+                        <button type="submit" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition duration-200">
+                            Ajouter
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Liste des membres -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membre</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rôle</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for user, membership in members %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">{{ user.username }}</div>
+                                                <div class="text-sm text-gray-500">{{ user.email }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {% if membership.role == 'admin' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                            {{ membership.role }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        {% if user.id != current_user.id %}
+                                            <button onclick="removeMember({{ user.id }})"
+                                                    class="text-red-600 hover:text-red-900 mr-4">
+                                                Supprimer
+                                            </button>
+                                            {% if membership.role != 'admin' %}
+                                                <button onclick="makeAdmin({{ user.id }})"
+                                                        class="text-blue-600 hover:text-blue-900">
+                                                    Nommer admin
+                                                </button>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-gray-400">Vous-même</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast pour les notifications -->
+    <div id="toast" class="fixed bottom-4 right-4 transform transition-transform duration-300 translate-y-full">
+        <div class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+
+    <script>
+        // Gestion du loader
+        document.addEventListener('DOMContentLoaded', function() {
+            const loader = document.getElementById('loader');
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 300);
+            }, 500);
+        });
+
+        // Fonctions de gestion des membres
+        function showToast(message, success = true) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-full');
+            toast.querySelector('div').className = `px-6 py-3 rounded-lg shadow-lg text-white ${success ? 'bg-green-500' : 'bg-red-500'}`;
+            setTimeout(() => {
+                toast.classList.add('translate-y-full');
+            }, 3000);
+        }
+
+        document.getElementById('addMemberForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const response = await fetch(`{{ url_for('manage_members', group_id=group.id) }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=add&email=${encodeURIComponent(email)}`
+            });
+            const data = await response.json();
+            showToast(data.message, data.success);
+            if (data.success) {
+                location.reload();
+            }
+        });
+
+        async function removeMember(userId) {
+            if (confirm('Êtes-vous sûr de vouloir retirer ce membre ?')) {
+                const response = await fetch(`{{ url_for('manage_members', group_id=group.id) }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=remove&member_id=${userId}`
+                });
+                if (response.ok) {
+                    location.reload();
+                }
+            }
+        }
+
+        async function makeAdmin(userId) {
+            if (confirm('Êtes-vous sûr de vouloir nommer cet utilisateur administrateur ?')) {
+                const response = await fetch(`{{ url_for('manage_members', group_id=group.id) }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=make_admin&member_id=${userId}`
+                });
+                if (response.ok) {
+                    location.reload();
+                }
+            }
+        }
+
+        let searchTimeout;
+        const searchInput = document.getElementById('search_user');
+        const searchResults = document.getElementById('searchResults');
+        const emailInput = document.getElementById('email');
+        const searchSpinner = document.getElementById('searchSpinner');
+        let currentQuery = '';
+        let lastRequestTime = 0;
+        const minQueryInterval = 150; // Intervalle minimum entre les requêtes en ms
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            currentQuery = query;
+            
+            if (query.length < 2) {
+                searchResults.classList.add('hidden');
+                searchSpinner.classList.add('hidden');
+                return;
+            }
+
+            const now = Date.now();
+            if (now - lastRequestTime < minQueryInterval) {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => performSearch(query), minQueryInterval);
+                return;
+            }
+            
+            performSearch(query);
+        });
+
+        async function performSearch(query) {
+            if (query !== currentQuery) return; // Ignorer si la requête n'est plus d'actualité
+            
+            lastRequestTime = Date.now();
+            searchSpinner.classList.remove('hidden');
+            
+            try {
+                fetch(`/search_users?query=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(users => {
+                        if (query !== currentQuery) return; // Vérifier encore une fois
+                        
+                        searchResults.innerHTML = '';
+                        if (users.length > 0) {
+                            users.forEach(user => {
+                                const div = document.createElement('div');
+                                div.className = 'px-4 py-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0';
+                                div.innerHTML = `
+                                    <div class="font-medium text-gray-900">${highlightMatch(user.username, query)}</div>
+                                    <div class="text-sm text-gray-600">${user.email}</div>
+                                `;
+                                div.onclick = () => {
+                                    emailInput.value = user.email;
+                                    searchInput.value = user.username;
+                                    searchResults.classList.add('hidden');
+                                };
+                                searchResults.appendChild(div);
+                            });
+                            searchResults.classList.remove('hidden');
+                        } else {
+                            searchResults.innerHTML = `
+                                <div class="px-4 py-3 text-sm text-gray-500">
+                                    Aucun utilisateur trouvé
+                                </div>
+                            `;
+                            searchResults.classList.remove('hidden');
+                        }
+                    })
+                    .finally(() => {
+                        searchSpinner.classList.add('hidden');
+                    });
+            } catch (error) {
+                console.error('Erreur lors de la recherche:', error);
+                searchSpinner.classList.add('hidden');
+            }
+        }
+
+        function highlightMatch(text, query) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+        }
+
+        // Masquer les résultats quand on clique ailleurs
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html> 

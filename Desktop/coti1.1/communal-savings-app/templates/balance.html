@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solde - CotiSmart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <!-- Logo et navigation desktop -->
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="{{ url_for('acceuil') }}" class="text-2xl font-bold text-blue-600">CotiSmart</a>
+                    </div>
+                    <!-- Navigation desktop -->
+                    <div class="hidden md:ml-6 md:flex md:space-x-8">
+                        <a href="{{ url_for('acceuil') }}" class="inline-flex items-center px-1 pt-1 text-gray-600 hover:text-blue-600 transition-colors duration-200">
+                            Accueil
+                        </a>
+                        <a href="{{ url_for('invitations') }}" class="inline-flex items-center px-1 pt-1 {% if request.endpoint == 'invitations' %}border-b-2 border-blue-500 text-blue-600{% else %}text-gray-600 hover:text-blue-600{% endif %} transition-colors duration-200 relative">
+                            Invitations
+                            {% if pending_invitations_count > 0 %}
+                            <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                {{ pending_invitations_count }}
+                            </span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('group') }}" class="inline-flex items-center px-1 pt-1 text-gray-600 hover:text-blue-600 transition-colors duration-200">
+                            Groupes
+                        </a>
+                        
+                    </div>
+                </div>
+
+                <!-- Boutons de droite -->
+                <div class="flex items-center">
+                    <!-- Bouton déconnexion desktop -->
+                    <a href="{{ url_for('deconnexion') }}" class="hidden md:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out">
+                        Déconnexion
+                    </a>
+                    <!-- Bouton menu mobile -->
+                    <button type="button" class="md:hidden bg-white p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500" onclick="toggleMobileMenu()">
+                        <span class="sr-only">Ouvrir le menu</span>
+                        <!-- Icône menu -->
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu mobile -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="{{ url_for('acceuil') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800">
+                    Accueil
+                </a>
+                <a href="{{ url_for('group') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800">
+                    Groupes
+                </a>
+                <a href="{{ url_for('transaction') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800">
+                    Transactions
+                </a>
+                <a href="{{ url_for('deconnexion') }}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-red-600 hover:bg-gray-50 hover:border-gray-300">
+                    Déconnexion
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-3xl font-bold text-gray-900">Solde du groupe</h1>
+                    <span class="text-lg font-medium text-gray-600">{{ group.name }}</span>
+                </div>
+
+                <!-- Carte du solde -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white transform hover:scale-105 transition duration-200">
+                        <h2 class="text-lg font-medium mb-2">Solde actuel</h2>
+                        <div class="text-4xl font-bold">
+                            {{ "%.2f"|format(total_balance) }} FCFA
+                        </div>
+                        <div class="mt-4 text-blue-100">
+                            Dernière mise à jour : {{ now.strftime('%d/%m/%Y %H:%M') }}
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg border p-6">
+                        <canvas id="transactionsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Actions rapides -->
+                <div class="flex flex-wrap gap-4">
+                    <a href="{{ url_for('transaction', group_id=group.id) }}" 
+                       class="inline-flex items-center px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Voir l'historique des transactions
+                    </a>
+                    <a href="{{ url_for('group') }}" 
+                       class="inline-flex items-center px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z"/>
+                        </svg>
+                        Retour aux groupes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animation au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('.transform');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    el.style.transition = 'all 0.5s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 100 + (index * 100));
+            });
+
+            // Configuration du graphique
+            const ctx = document.getElementById('transactionsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{ dates|tojson|safe }},
+                    datasets: [{
+                        label: 'Évolution du solde',
+                        data: {{ balances|tojson|safe }},
+                        borderColor: 'rgb(59, 130, 246)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Évolution du solde dans le temps'
+                        }
+                    }
+                }
+            });
+        });
+
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.style.maxHeight = '0';
+                mobileMenu.style.transition = 'max-height 0.3s ease-in-out';
+                requestAnimationFrame(() => {
+                    mobileMenu.style.maxHeight = mobileMenu.scrollHeight + 'px';
+                });
+            } else {
+                mobileMenu.style.maxHeight = '0';
+                setTimeout(() => {
+                    mobileMenu.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                const mobileMenu = document.getElementById('mobile-menu');
+                mobileMenu.classList.add('hidden');
+                mobileMenu.style.maxHeight = null;
+            }
+        });
+    </script>
+</body>
+</html>

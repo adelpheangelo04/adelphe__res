@@ -32,6 +32,9 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Membre</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Montant</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                    {% if is_admin %}
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                    {% endif %}
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -51,6 +54,12 @@
                                         <td class="px-6 py-4 text-sm text-gray-900">
                                             {{ transaction.description or '-' }}
                                         </td>
+                                        {% if is_admin %}
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            <a href="{{ url_for('edit_transaction', transaction_id=transaction.id) }}" 
+                                               class="text-blue-500 hover:text-blue-700">Modifier</a>
+                                        </td>
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
                             </tbody>

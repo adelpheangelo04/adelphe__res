@@ -70,7 +70,7 @@ def init_db():
         # Créer un utilisateur administrateur par défaut
         admin = User(
             username='admin',
-            email='adelphedoua04@gmail.com',
+            email='admin@cotismart.com',
             password='Adelphedoua.',
             role='admin'
         )
@@ -85,8 +85,19 @@ def init_db():
         )
         db.session.add(simple_user)
         db.session.commit()
+         # Créer un deuxième utilisateur simple
+
+        simple_user2 = User(
+            username='Adelphe Doua',
+            email='adelphedoua04@gmail.com',
+            password='Adelphedoua.',
+            role='user'
+        )
+        db.session.add(simple_user2)
+        db.session.commit()
 
 # Initialiser la base de données au démarrage
+
 #init_db()
 
 def get_pending_invitations_count(user_id):
@@ -167,7 +178,8 @@ def acceuil():
         .join(User, Transaction.member_id == User.id)\
         .filter(Transaction.group_id.in_(user_group_ids))\
         .order_by(Transaction.date.desc())\
-        .limit(5).all()
+        .all()
+    
 
     # Calculer le solde total de l'utilisateur
     incoming_transactions = db.session.query(db.func.sum(Transaction.amount))\

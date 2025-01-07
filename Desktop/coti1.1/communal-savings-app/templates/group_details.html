@@ -6,6 +6,8 @@
     <title>Détails du Groupe - CotiSmart</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
     <!-- Navigation -->
@@ -38,6 +40,22 @@
             </div>
         </div>
 
+        <!-- Liste des membres -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-8 p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Membres du Groupe</h2>
+            <ul class="list-disc pl-5">
+                {% for member in group.members %}
+                    <li class="text-gray-700 flex items-center mb-2">
+                        <i class="fas fa-user text-blue-500 mr-3"></i>
+                        <span>{{ member.user.username }}</span>
+                        <a href="{{ url_for('member_calendar', group_id=group.id, member_id=member.user.id) }}" class="ml-4 text-blue-600 hover:text-blue-800">
+                            Voir le calendrier
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
         <!-- Contributions des membres -->
         <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-8 p-6">
             <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
@@ -58,6 +76,8 @@
             <h2 class="text-2xl font-bold text-gray-900 mb-4">Évolution du Solde de la Caisse</h2>
             <canvas id="balanceChart"></canvas>
         </div>
+
+        <div id='calendar'></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -103,6 +123,22 @@
                     }
                 }
             }
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: '/api/group/{{ group.id }}/payments',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                }
+            });
+            calendar.render();
         });
     </script>
 </body>

@@ -11,7 +11,7 @@
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
+    <nav class="bg-white shadow-lg transform opacity-0 translate-y-4 transition duration-300 ease-in-out">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-16">
                 <!-- Logo et navigation desktop -->
@@ -103,7 +103,7 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- En-tête de bienvenue -->
-        <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-6">
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden mb-6 transform opacity-0 translate-y-4 transition duration-300 ease-in-out">
             <div class="p-6">
                 <h1 class="text-3xl font-bold text-gray-900">Bienvenue, {{ user.username }} !</h1>
                 <p class="mt-2 text-gray-600">Gérez vos épargnes communes facilement et efficacement.</p>
@@ -111,8 +111,8 @@
         </div>
 
         <!-- Cartes de statistiques -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-200">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-300 ease-in-out opacity-0 translate-y-4">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-blue-100 text-blue-600">
                         <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,7 +126,7 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-200">
+            <div class="bg-white rounded-lg shadow-md p-6 transform hover:scale-105 transition duration-300 ease-in-out opacity-0 translate-y-4">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-green-100 text-green-600">
                         <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,24 +140,42 @@
                 </div>
             </div>
 
-            <!-- Actions rapides -->
-            <div class="md:col-span-2 bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Actions rapides</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <a href="{{ url_for('group') }}" 
-                       class="flex items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
-                        <span class="text-blue-600 font-medium">Gérer mes groupes</span>
-                    </a>
-                    <a href="" 
-                       class="flex items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-200">
-                        <span class="text-green-600 font-medium">Nouvelle transaction</span>
-                    </a>
+            {% for group in user_groups %}
+            <div class="bg-white rounded-lg shadow-md p-6  transform hover:scale-105 transition duration-300 ease-in-out opacity-0 translate-y-4">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h2 class="text-gray-600 text-sm">Montant restant à payer pour {{ group.name }}</h2>
+                        {% set contribution = group_contributions[group.id] %}
+                        <p class="text-2xl font-semibold text-gray-800">{{ contribution.remaining }} FCFA</p>
+                        <p class="text-sm text-gray-500">Montant total dû : {{ contribution.total_due }} FCFA</p>
+                    </div>
                 </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Actions rapides -->
+        <div class="md:col-span-2 bg-white rounded-lg shadow-md p-6 transform opacity-0 translate-y-4 transition duration-300 ease-in-out mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Actions rapides</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <a href="{{ url_for('group') }}" 
+                   class="flex items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition duration-200">
+                    <span class="text-blue-600 font-medium">Gérer mes groupes</span>
+                </a>
+                <a href="" 
+                   class="flex items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition duration-200">
+                    <span class="text-green-600 font-medium">Nouvelle transaction</span>
+                </a>
             </div>
         </div>
 
         <!-- Activité récente -->
-        <div class="p-6 bg-white rounded shadow-md max-sm:p-2">
+        <div class="p-6 bg-white rounded shadow-md max-sm:p-2 transform opacity-0 translate-y-4 transition duration-300 ease-in-out">
             <h1 class="text-3xl font-bold text-gray-900 mb-6">Activité Récente</h1>
 
             <div class="overflow-x-auto mb-8">
@@ -206,20 +224,12 @@
         // Animations au chargement de la page
         document.addEventListener('DOMContentLoaded', function() {
             const elements = document.querySelectorAll('.transform');
-            elements.forEach(el => {
-                el.style.opacity = '0';
-                el.style.transform = 'translateY(20px)';
+            elements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 100);
             });
-
-            setTimeout(() => {
-                elements.forEach((el, index) => {
-                    setTimeout(() => {
-                        el.style.transition = 'all 0.5s ease';
-                        el.style.opacity = '1';
-                        el.style.transform = 'translateY(0)';
-                    }, index * 100);
-                });
-            }, 100);
         });
 
         function toggleMobileMenu() {

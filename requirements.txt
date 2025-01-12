@@ -1,0 +1,7 @@
+Flask
+Flask-SQLAlchemy
+Werkzeug
+Flask-WTF
+Flask-Login
+Flask-Migrate
+TailwindCSS
